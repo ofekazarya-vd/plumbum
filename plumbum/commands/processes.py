@@ -155,6 +155,8 @@ class ProcessExecutionError(OSError):
         if isinstance(stdout, list):
             assert isinstance(stderr, list)
             self.all_output += self._format_lines(heapq.merge(stdout, stderr))
+            self.stdout = "\n".join(line for *_, line in stdout)
+            self.stderr = "\n".join(line for *_, line in stderr)
         else:
             if isinstance(stdout, bytes):
                 stdout = ascii(stdout)
