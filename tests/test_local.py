@@ -756,6 +756,10 @@ class TestLocalMachine:
             local.cmd.ls("no-file")
         assert pickle.loads(pickle.dumps(exc_info.value)).argv == exc_info.value.argv
 
+        with pytest.raises(ProcessExecutionError) as exc_info:
+            list(local.cmd.ls["no-file"].popen())
+        assert pickle.loads(pickle.dumps(exc_info.value)).argv == exc_info.value.argv
+
     def test_tempdir(self):
         with local.tempdir() as dir:
             assert dir.is_dir()

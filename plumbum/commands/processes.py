@@ -172,7 +172,7 @@ class ProcessExecutionError(OSError):
                 self.all_output += ["\nStderr:       | ", stderr]
 
     def _format_lines(self, lines):
-        fd_names = ['stdout', 'stderr']
+        fd_names = ["stdout", "stderr"]
         for idx, ts, stream_fd, line in lines:
             source = fd_names[stream_fd - 1]
             for _line in line.splitlines():
@@ -424,7 +424,7 @@ def iter_lines(
             ret[t] = line
             yield tuple(ret)
         elif mode is BY_TYPE:
-            yield (stream_fd), line  
+            yield (stream_fd), line
 
     # this will take care of checking return code and timeouts
     _check_process(proc, retcode, timeout, *buffers)
