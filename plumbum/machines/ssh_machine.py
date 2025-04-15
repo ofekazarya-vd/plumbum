@@ -2,6 +2,7 @@ import re
 import socket
 import warnings
 from contextlib import closing
+import ipaddress
 
 from plumbum.commands import ProcessExecutionError, shquote
 from plumbum.lib import IS_WIN32
@@ -69,6 +70,12 @@ class SshTunnel:
         """Represents if the tunnel is a reverse tunnel."""
         return self._reverse
 
+def is_ipv6_address(addr: str) -> bool:
+    try:
+        ipaddress.IPv6Address(addr)
+        return True
+    except ValueError:
+        return False
 
 class SshMachine(BaseRemoteMachine):
     """
@@ -145,6 +152,9 @@ class SshMachine(BaseRemoteMachine):
             self._fqhost = f"{user}@{host}"
         else:
             self._fqhost = host
+        # if the host is an IPv6 address, we need to wrap it in brackets for scp command (upload / download functions)
+        scp_host = f'[{self.host}]' if not self.host.startswith('[') and is_ipv6_address(self.host) else self.host
+        self.scp_fqhost = f"{user}@{scp_host}" if user else scp_host
         if port:
             ssh_args.extend(["-p", str(port)])
             scp_args.extend(["-P", str(port)])
@@ -350,7 +360,7 @@ class SshMachine(BaseRemoteMachine):
         if IS_WIN32:
             src = self._translate_drive_letter(src)
             dst = self._translate_drive_letter(dst)
-        self._scp_command(f"{self._fqhost}:{shquote(src)}", dst)
+        self._scp_command(f"{self.scp_fqhost}:{shquote(src)}", dst)
 
     def upload(self, src, dst):
         if isinstance(src, RemotePath):
@@ -362,7 +372,7 @@ class SshMachine(BaseRemoteMachine):
         if IS_WIN32:
             src = self._translate_drive_letter(src)
             dst = self._translate_drive_letter(dst)
-        self._scp_command(src, f"{self._fqhost}:{shquote(dst)}")
+        self._scp_command(src, f"{self.scp_fqhost}:{shquote(dst)}")
 
 
 class PuttyMachine(SshMachine):
