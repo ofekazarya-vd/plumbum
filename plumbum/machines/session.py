@@ -6,7 +6,6 @@ import time
 
 from plumbum.commands import BaseCommand, run_proc
 from plumbum.commands.processes import ProcessExecutionError
-from plumbum.lib import six
 from plumbum.machines.base import PopenAddons
 
 
@@ -124,8 +123,8 @@ class SessionPopen(PopenAddons):
 
                 self.proc.poll()
                 returncode = self.proc.returncode
-                stdout = six.b("").join(stdout).decode(self.custom_encoding, "ignore")
-                stderr = six.b("").join(stderr).decode(self.custom_encoding, "ignore")
+                stdout = b"".join(stdout).decode(self.custom_encoding, "ignore")
+                stderr = b"".join(stderr).decode(self.custom_encoding, "ignore")
                 argv = self.argv.decode(self.custom_encoding, "ignore").split(";")[:1]
 
                 if returncode == 5:
