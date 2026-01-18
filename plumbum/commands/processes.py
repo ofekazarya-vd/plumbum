@@ -350,8 +350,7 @@ def run_proc(proc, retcode, timeout=None):
 BY_POSITION = object()
 BY_TYPE = object()
 DEFAULT_ITER_LINES_MODE = BY_POSITION
-DEFAULT_BUFFER_SIZE = math.inf
-
+DEFAULT_BUFFER_SIZE = _INFINITE = math.inf
 
 def iter_lines(
     proc,
