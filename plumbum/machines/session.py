@@ -209,6 +209,27 @@ class ShellSession:
                             is seen, the shell process is killed
     """
 
+    # procs_to_close = []
+
+    # @classmethod
+    # def close_sessions(cls):
+    #     def close_proc(proc):
+    #         if not (proc and proc.poll() is None):
+    #             return
+    #         with contextlib.suppress(ValueError, OSError):
+    #             proc.stdin.write(b"\nexit\n\n\nexit\n\n")
+    #             proc.stdin.flush()
+    #             time.sleep(0.05)
+    #         for p in (proc.stdin, proc.stdout, proc.stderr):
+    #             with contextlib.suppress(Exception):
+    #                 p.close()
+    #         with contextlib.suppress(OSError):
+    #             proc.kill()
+
+    #     for proc in cls.procs_to_close:
+    #         close_proc(proc)
+    #         del proc
+
     def __init__(
         self, proc, encoding="auto", isatty=False, connect_timeout=5, *, host=None
     ):
@@ -242,8 +263,8 @@ class ShellSession:
         self.close()
 
     def __del__(self):
-        with contextlib.suppress(Exception):
-            self.close()
+        print("SESSION_DEBUG:", self, self.host, self.proc)
+        # self.__class__.procs_to_close.append(self.proc)
 
     def alive(self):
         """Returns ``True`` if the underlying shell process is alive, ``False`` otherwise"""
