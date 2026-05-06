@@ -4,6 +4,8 @@ import random
 import threading
 import time
 
+from easypy.gevent import non_gevent_sleep
+
 from plumbum.commands import BaseCommand, run_proc
 from plumbum.commands.processes import ProcessExecutionError
 from plumbum.machines.base import PopenAddons
@@ -279,7 +281,7 @@ class ShellSession:
         with contextlib.suppress(ValueError, OSError):
             self.proc.stdin.write(b"\nexit\n\n\nexit\n\n")
             self.proc.stdin.flush()
-            time.sleep(0.05)
+            non_gevent_sleep(0.05)
         for p in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
             with contextlib.suppress(Exception):
                 p.close()
