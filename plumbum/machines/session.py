@@ -274,11 +274,14 @@ class ShellSession:
         """Returns ``True`` if the underlying shell process is alive, ``False`` otherwise"""
         return self.proc and self.proc.poll() is None
 
-    def close(self):
+    def close(self, in_del=False):
         """Closes (terminates) the shell session"""
-        if not self.alive():
+        if (not in_del and not self.alive()) or (in_del and not (self.proc and self.proc.returncode is None)):
             return
         with contextlib.suppress(ValueError, OSError):
+            import inspect
+            if in_del:
+                breakpoint()
             self.proc.stdin.write(b"\nexit\n\n\nexit\n\n")
             self.proc.stdin.flush()
             non_gevent_sleep(0.05)
