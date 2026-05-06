@@ -4,8 +4,6 @@ import random
 import threading
 import time
 
-from easypy.gevent import non_gevent_sleep
-
 from plumbum.commands import BaseCommand, run_proc
 from plumbum.commands.processes import ProcessExecutionError
 from plumbum.machines.base import PopenAddons
@@ -211,26 +209,26 @@ class ShellSession:
                             is seen, the shell process is killed
     """
 
-    # procs_to_close = []
+    procs_to_close = []
 
-    # @classmethod
-    # def close_sessions(cls):
-    #     def close_proc(proc):
-    #         if not (proc and proc.poll() is None):
-    #             return
-    #         with contextlib.suppress(ValueError, OSError):
-    #             proc.stdin.write(b"\nexit\n\n\nexit\n\n")
-    #             proc.stdin.flush()
-    #             time.sleep(0.05)
-    #         for p in (proc.stdin, proc.stdout, proc.stderr):
-    #             with contextlib.suppress(Exception):
-    #                 p.close()
-    #         with contextlib.suppress(OSError):
-    #             proc.kill()
+    @classmethod
+    def close_sessions(cls):
+        def close_proc(proc):
+            if not (proc and proc.poll() is None):
+                return
+            with contextlib.suppress(ValueError, OSError):
+                proc.stdin.write(b"\nexit\n\n\nexit\n\n")
+                proc.stdin.flush()
+                time.sleep(0.05)
+            for p in (proc.stdin, proc.stdout, proc.stderr):
+                with contextlib.suppress(Exception):
+                    p.close()
+            with contextlib.suppress(OSError):
+                proc.kill()
 
-    #     for proc in cls.procs_to_close:
-    #         close_proc(proc)
-    #         del proc
+        for proc in cls.procs_to_close:
+            close_proc(proc)
+        cls.procs_to_close.clear()
 
     def __init__(
         self, proc, encoding="auto", isatty=False, connect_timeout=5, *, host=None
@@ -266,9 +264,8 @@ class ShellSession:
 
     def __del__(self):
         print("SESSION_DEBUG:", self, self.host, self.proc)
-        with contextlib.suppress(Exception):
-            self.close()
-        # self.__class__.procs_to_close.append(self.proc)
+        if self.alive():
+            self.__class__.procs_to_close.append(self.proc)
 
     def alive(self):
         """Returns ``True`` if the underlying shell process is alive, ``False`` otherwise"""
@@ -281,7 +278,7 @@ class ShellSession:
         with contextlib.suppress(ValueError, OSError):
             self.proc.stdin.write(b"\nexit\n\n\nexit\n\n")
             self.proc.stdin.flush()
-            non_gevent_sleep(0.05)
+            time.sleep(0.05)
         for p in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
             with contextlib.suppress(Exception):
                 p.close()
