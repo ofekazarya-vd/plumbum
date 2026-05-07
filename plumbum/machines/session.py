@@ -267,7 +267,7 @@ class ShellSession:
     def __del__(self):
         print("SESSION_DEBUG:", self, self.host, self.proc)
         with contextlib.suppress(Exception):
-            self.close()
+            self.close(True)
         # self.__class__.procs_to_close.append(self.proc)
 
     def alive(self):
