@@ -245,6 +245,10 @@ class ShellSession:
         # Using hard cleanup using SIGKILL for processes that weren't closed
         # properly to prevent gevent context switches. The function self.close
         # does many of them.
+        if self.proc and self.proc.returncode is None:
+            print(
+                f"ShellSession.__del__ killing live proc pid={getattr(self.proc, 'pid', '?')}",
+                flush=True)
         with contextlib.suppress(Exception):
             if self.proc and self.proc.returncode is None:
                 self.proc.kill()

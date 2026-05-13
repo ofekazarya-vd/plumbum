@@ -36,8 +36,8 @@ class PlumbumLocalPopen(PopenAddons):
                 cmd = args[0][:3] if args else '?'
                 print(
                     f"PLUMBUM.EBADF: failed_fd={failed_name}={failed_fd} "
-                    f"open_fds={fd_count} cmd={cmd}"
-                )
+                    f"open_fds={fd_count} cmd={cmd}",
+                    flush=True)
             raise
 
     def __iter__(self):
