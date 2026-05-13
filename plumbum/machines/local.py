@@ -26,7 +26,19 @@ class PlumbumLocalPopen(PopenAddons):
     iter_lines = iter_lines
 
     def __init__(self, *args, **kwargs):
-        self._proc = Popen(*args, **kwargs)  # pylint: disable=consider-using-with
+        try:
+            self._proc = Popen(*args, **kwargs)  # pylint: disable=consider-using-with
+        except OSError as e:
+            if e.errno == 9:
+                fd_count = len(os.listdir('/proc/self/fd'))
+                failed_fd = getattr(e, '_failed_fd_num', '?')
+                failed_name = getattr(e, '_failed_fd_name', '?')
+                cmd = args[0][:3] if args else '?'
+                print(
+                    f"PLUMBUM.EBADF: failed_fd={failed_name}={failed_fd} "
+                    f"open_fds={fd_count} cmd={cmd}"
+                )
+            raise
 
     def __iter__(self):
         return self.iter_lines()
