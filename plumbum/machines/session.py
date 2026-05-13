@@ -245,13 +245,17 @@ class ShellSession:
         # Using hard cleanup using SIGKILL for processes that weren't closed
         # properly to prevent gevent context switches. The function self.close
         # does many of them.
-        if self.proc and self.proc.returncode is None:
-            print(
-                f"ShellSession.__del__ killing live proc pid={getattr(self.proc, 'pid', '?')}",
-                flush=True)
-        with contextlib.suppress(Exception):
-            if self.proc and self.proc.returncode is None:
-                self.proc.kill()
+        # We must synchronously close pipe FDs here — deferred closes via
+        # gevent's cancel_waits_close_and_then can survive into forked children
+        # and close FDs that have been reused by new pipes (ORION-355678).
+        if self.proc:
+            import os
+            for p in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
+                with contextlib.suppress(Exception):
+                    os.close(p.fileno())
+            with contextlib.suppress(Exception):
+                if self.proc.returncode is None:
+                    self.proc.kill()
         self.proc = None
 
     def alive(self):
